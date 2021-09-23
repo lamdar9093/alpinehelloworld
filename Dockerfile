@@ -1,56 +1,15 @@
-#Grab the latest alpine image
-FROM alpine:3
+FROM alpine:3.14
 
+# This hack is widely applied to avoid python printing issues in docker containers.
+# See: https://github.com/Docker-Hub-frolvlad/docker-alpine-python3/pull/13
+ENV PYTHONUNBUFFERED=1
 
-RUN  apk --no-cache add \
-                        curl \
-                        libintl \
-                        python3-dev \
-                        libsodium-dev \
-                        openssl-dev \
-                        udns-dev \
-                        mbedtls-dev \
-                        pcre-dev \
-                        libev-dev \
-                        libtool \
-                        libffi-dev            && \
-     apk --no-cache add --virtual .build-deps \
-                        tar \
-                        make \
-                        gettext \
-                        py3-pip \
-                        autoconf \
-                        automake \
-                        build-base \
-                        linux-headers         && \
-     ln -s /usr/bin/python3 /usr/bin/python  && \
-     ln -s /usr/bin/pip3    /usr/bin/pip     && \
-     cp  /usr/bin/envsubst  /usr/local/bin/   && \
-     pip install --upgrade pip                && \
-     pip install -r requirements.txt          && \
-     rm -rf ~/.cache && touch /etc/hosts.deny && \
-     apk del --purge .build-deps
-
-
-
-
-ADD ./webapp/requirements.txt /tmp/requirements.txt
-
-# Install dependencies
-RUN pip3 install --no-cache-dir -q -r /tmp/requirements.txt
-
-# Add our code
-ADD ./webapp /opt/webapp/
-WORKDIR /opt/webapp
-
-# Expose is NOT supported by Heroku
-# EXPOSE 5000 		
-
-# Run the image as a non-root user
-RUN adduser -D myuser
-USER myuser
-
-# Run the app.  CMD is required to run on Heroku
-# $PORT is set by Heroku			
-CMD gunicorn --bind 0.0.0.0:$PORT wsgi 
-
+RUN echo "**** install Python ****" && \
+    apk add --no-cache python3 && \
+    if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
+    \
+    echo "**** install pip ****" && \
+    python3 -m ensurepip && \
+    rm -r /usr/lib/python*/ensurepip && \
+    pip3 install --no-cache --upgrade pip setuptools wheel && \
+    if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi
