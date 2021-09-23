@@ -6,7 +6,7 @@ FROM alpine:latest
 ADD ./webapp/requirements.txt /tmp/requirements.txt
 
 # Install dependencies
-RUN pip3 install --no-cache-dir -q -r /tmp/requirements.txt
+RUN /usr/bin/pip3 install --no-cache-dir -q -r /tmp/requirements.txt
 
 # Add our code
 ADD ./webapp /opt/webapp/
