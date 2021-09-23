@@ -1,8 +1,39 @@
 #Grab the latest alpine image
 FROM alpine:latest
 
-# Install python and pip
-RUN apk add python py3-pip
+
+RUN  apk --no-cache add \
+                        curl \
+                        libintl \
+                        python3-dev \
+                        libsodium-dev \
+                        openssl-dev \
+                        udns-dev \
+                        mbedtls-dev \
+                        pcre-dev \
+                        libev-dev \
+                        libtool \
+                        libffi-dev            && \
+     apk --no-cache add --virtual .build-deps \
+                        tar \
+                        make \
+                        gettext \
+                        py3-pip \
+                        autoconf \
+                        automake \
+                        build-base \
+                        linux-headers         && \
+     ln -s /usr/bin/python3 /usr/bin/python  && \
+     ln -s /usr/bin/pip3    /usr/bin/pip     && \
+     cp  /usr/bin/envsubst  /usr/local/bin/   && \
+     pip install --upgrade pip                && \
+     pip install -r requirements.txt          && \
+     rm -rf ~/.cache && touch /etc/hosts.deny && \
+     apk del --purge .build-deps
+
+
+
+
 ADD ./webapp/requirements.txt /tmp/requirements.txt
 
 # Install dependencies
