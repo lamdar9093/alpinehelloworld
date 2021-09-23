@@ -1,5 +1,5 @@
 #Grab the latest alpine image
-FROM alpine:latest
+FROM alpine:3
 
 
 RUN  apk --no-cache add \
